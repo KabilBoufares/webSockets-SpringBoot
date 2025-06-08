@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0" />
+  <title>Spring Boot WebSocket Chat</title>
+  <link rel="stylesheet" href="./css/style.css" />
+</head>
+<body>
+  <div class="page page--login" id="login-page">
+    <div class="login">
+      <h1 class="login__title">Entrez votre pseudo</h1>
+      <form id="loginForm" class="login__form">
+        <input type="text"
+               id="username"
+               class="login__input"
+               placeholder="Pseudo"
+               autocomplete="off"
+               required />
+        <button type="submit" class="btn btn--accent">Commencer</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="page page--chat hidden" id="chat-page">
+    <div class="chat__container">
+      <header class="chat__header">
+        <h2 class="chat__title">WebSocket Chat Demo</h2>
+        <div class="chat__status" id="connecting">Connexion…</div>
+      </header>
+
+      <main class="chat__main">
+        <ul class="chat__messages" id="messageArea"></ul>
+      </main>
+
+      <form id="messageForm" class="chat__form">
+        <input type="text"
+               id="message"
+               class="chat__input"
+               placeholder="Votre message…"
+               autocomplete="off"
+               required />
+        <button type="submit" class="btn btn--primary">Envoyer</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- WebSocket Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+  
+  <!-- Main Application -->
+  <script src="./js/main.js"></script>
+</body>
+</html>

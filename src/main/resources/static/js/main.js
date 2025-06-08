@@ -9,9 +9,15 @@
   const messageInput = document.getElementById('message');
   const messageArea = document.getElementById('messageArea');
   const statusEl = document.getElementById('connecting');
+  const emojiBtn = document.getElementById('emoji-btn');
+  const emojiPickerOverlay = document.getElementById('emoji-picker-overlay');
+  const emojiPicker = document.getElementById('emoji-picker');
+  const closeEmojiPicker = document.getElementById('close-emoji-picker');
+  const emojiContent = document.getElementById('emoji-content');
 
   let stompClient = null;
   let username = null;
+  let currentEmojiCategory = 'smileys';
 
   // Avatar colors for consistent user identification
   const colors = [
@@ -19,18 +25,95 @@
     '#ffc107', '#ff85af', '#FF9800', '#39bbb0'
   ];
 
+  // Emoji categories with their emojis
+  const emojiCategories = {
+    smileys: [
+      '😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂',
+      '🙂', '🙃', '😉', '😊', '😇', '🥰', '😍', '🤩',
+      '😘', '😗', '☺️', '😚', '😙', '🥲', '😋', '😛',
+      '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', '🤔',
+      '🤐', '🤨', '😐', '😑', '😶', '😏', '😒', '🙄',
+      '😬', '🤥', '😔', '😪', '🤤', '😴', '😷', '🤒'
+    ],
+    people: [
+      '👋', '🤚', '🖐️', '✋', '🖖', '👌', '🤌', '🤏',
+      '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆',
+      '🖕', '👇', '☝️', '👍', '👎', '👊', '✊', '🤛',
+      '🤜', '👏', '🙌', '👐', '🤲', '🤝', '🙏', '✍️',
+      '💅', '🤳', '💪', '🦾', '🦿', '🦵', '🦶', '👂',
+      '🦻', '👃', '🧠', '🫀', '🫁', '🦷', '🦴', '👀'
+    ],
+    nature: [
+      '🌸', '💮', '🏵️', '🌹', '🥀', '🌺', '🌻', '🌼',
+      '🌷', '🌱', '🪴', '🌲', '🌳', '🌴', '🌵', '🌶️',
+      '🍄', '🌾', '💐', '🌿', '🍀', '🍃', '🪨', '🌍',
+      '🌎', '🌏', '🌕', '🌖', '🌗', '🌘', '🌑', '🌒',
+      '🌓', '🌔', '🌙', '🌛', '🌜', '🌚', '🌝', '🌞',
+      '⭐', '🌟', '💫', '✨', '☄️', '☀️', '🌤️', '⛅'
+    ],
+    food: [
+      '🍎', '🍏', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇',
+      '🍓', '🫐', '🍈', '🍒', '🍑', '🥭', '🍍', '🥥',
+      '🥝', '🍅', '🍆', '🥑', '🥦', '🥬', '🥒', '🌶️',
+      '🫑', '🌽', '🥕', '🫒', '🧄', '🧅', '🥔', '🍠',
+      '🥐', '🥖', '🍞', '🥨', '🥯', '🧀', '🥚', '🍳',
+      '🧈', '🥞', '🧇', '🥓', '🥩', '🍗', '🍖', '🌭'
+    ],
+    activities: [
+      '⚽', '🏀', '🏈', '⚾', '🥎', '🎾', '🏐', '🏉',
+      '🥏', '🎱', '🪀', '🏓', '🏸', '🏒', '🏑', '🥍',
+      '🏏', '🪃', '🥅', '⛳', '🪁', '🏹', '🎣', '🤿',
+      '🥊', '🥋', '🎽', '🛹', '🛷', '⛸️', '🥌', '🎿',
+      '⛷️', '🏂', '🪂', '🏋️', '🤼', '🤸', '⛹️', '🤺',
+      '🏇', '🧘', '🏄', '🏊', '🤽', '🚣', '🧗', '🚵'
+    ],
+    travel: [
+      '🚗', '🚕', '🚙', '🚌', '🚎', '🏎️', '🚓', '🚑',
+      '🚒', '🚐', '🛻', '🚚', '🚛', '🚜', '🏍️', '🛵',
+      '🚲', '🛴', '🛹', '🛼', '🚁', '🛸', '✈️', '🛩️',
+      '🛫', '🛬', '🪂', '💺', '🚀', '🛰️', '🚢', '⛵',
+      '🚤', '🛥️', '🛳️', '⛴️', '🚂', '🚃', '🚄', '🚅',
+      '🚆', '🚇', '🚈', '🚉', '🚊', '🚝', '🚞', '🚋'
+    ],
+    objects: [
+      '💡', '🔦', '🕯️', '🪔', '🧯', '🛢️', '💸', '💵',
+      '💴', '💶', '💷', '🪙', '💰', '💳', '💎', '⚖️',
+      '🪜', '🧰', '🔧', '🔨', '⚒️', '🛠️', '⛏️', '🪓',
+      '🪚', '🔩', '⚙️', '🪤', '🧲', '🔫', '💣', '🧨',
+      '🪓', '🔪', '🗡️', '⚔️', '🛡️', '🚬', '⚰️', '🪦',
+      '⚱️', '🏺', '🔮', '📿', '🧿', '💈', '⚗️', '🔭'
+    ],
+    symbols: [
+      '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍',
+      '🤎', '💔', '❣️', '💕', '💞', '💓', '💗', '💖',
+      '💘', '💝', '💟', '☮️', '✝️', '☪️', '🕉️', '☸️',
+      '✡️', '🔯', '🕎', '☯️', '☦️', '🛐', '⛎', '♈',
+      '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐',
+      '♑', '♒', '♓', '🆔', '⚛️', '🉑', '☢️', '☣️'
+    ]
+  };
+
   // Initialize the application
   function init() {
     // Check if WebSocket libraries are loaded
     if (typeof SockJS === 'undefined' || typeof Stomp === 'undefined') {
       console.warn('WebSocket libraries not loaded. Running in demo mode.');
       initDemoMode();
-      return;
     }
 
     // Bind event listeners
     loginForm.addEventListener('submit', handleLogin);
     messageForm.addEventListener('submit', handleSendMessage);
+    emojiBtn.addEventListener('click', showEmojiPicker);
+    closeEmojiPicker.addEventListener('click', hideEmojiPicker);
+    emojiPickerOverlay.addEventListener('click', (e) => {
+      if (e.target === emojiPickerOverlay) {
+        hideEmojiPicker();
+      }
+    });
+
+    // Initialize emoji picker
+    initEmojiPicker();
   }
 
   function handleLogin(event) {
@@ -167,7 +250,7 @@
     // Add welcome message
     addMessage({
       sender: 'Système',
-      content: 'Bienvenue dans le chat ! (Mode démo)',
+      content: 'Bienvenue dans le chat ! (Mode démo) 🎉',
       type: 'CHAT'
     });
     
@@ -182,19 +265,19 @@
     const responses = [
       "C'est intéressant ! 🤔",
       "Je suis d'accord ! 👍",
-      "Bonne remarque !",
-      "Exactement ce que je pensais",
-      "Merci de partager ça",
+      "Bonne remarque ! 💡",
+      "Exactement ce que je pensais 🎯",
+      "Merci de partager ça 🙏",
       "Cool ! 😎",
-      "Ça me semble logique",
-      "Bon à savoir !",
+      "Ça me semble logique 🧠",
+      "Bon à savoir ! 📚",
       "Génial ! 🎉",
-      "J'aime cette idée",
-      "Très vrai !",
-      "C'est utile, merci !",
-      "Je n'y avais pas pensé",
-      "Excellente question !",
-      "Perspective intéressante"
+      "J'aime cette idée 💡",
+      "Très vrai ! ✅",
+      "C'est utile, merci ! 🤝",
+      "Je n'y avais pas pensé 💭",
+      "Excellente question ! ❓",
+      "Perspective intéressante 👀"
     ];
     
     const names = ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve', 'Frank', 'Grace', 'Henry'];
@@ -206,6 +289,70 @@
       content: randomResponse,
       type: 'CHAT'
     });
+  }
+
+  // Emoji Picker Functions
+  function initEmojiPicker() {
+    // Create category buttons
+    const categoryButtons = document.querySelectorAll('.emoji-category');
+    categoryButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const category = button.dataset.category;
+        switchEmojiCategory(category);
+        
+        // Update active state
+        categoryButtons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+      });
+    });
+
+    // Load initial category
+    loadEmojiCategory('smileys');
+  }
+
+  function showEmojiPicker() {
+    emojiPickerOverlay.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function hideEmojiPicker() {
+    emojiPickerOverlay.classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+
+  function switchEmojiCategory(category) {
+    currentEmojiCategory = category;
+    loadEmojiCategory(category);
+  }
+
+  function loadEmojiCategory(category) {
+    const emojis = emojiCategories[category] || [];
+    emojiContent.innerHTML = '';
+
+    emojis.forEach(emoji => {
+      const button = document.createElement('button');
+      button.className = 'emoji-option';
+      button.textContent = emoji;
+      button.addEventListener('click', () => {
+        insertEmoji(emoji);
+      });
+      emojiContent.appendChild(button);
+    });
+  }
+
+  function insertEmoji(emoji) {
+    const cursorPos = messageInput.selectionStart;
+    const textBefore = messageInput.value.substring(0, cursorPos);
+    const textAfter = messageInput.value.substring(cursorPos);
+    
+    messageInput.value = textBefore + emoji + textAfter;
+    messageInput.focus();
+    
+    // Set cursor position after the emoji
+    const newCursorPos = cursorPos + emoji.length;
+    messageInput.setSelectionRange(newCursorPos, newCursorPos);
+    
+    hideEmojiPicker();
   }
 
   function getAvatarColor(name) {
@@ -229,6 +376,24 @@
     return div.innerHTML;
   }
 
+  // Keyboard shortcuts
+  document.addEventListener('keydown', (e) => {
+    // Escape key to close emoji picker
+    if (e.key === 'Escape' && !emojiPickerOverlay.classList.contains('hidden')) {
+      hideEmojiPicker();
+    }
+    
+    // Ctrl/Cmd + E to open emoji picker
+    if ((e.ctrlKey || e.metaKey) && e.key === 'e' && !loginPage.classList.contains('hidden') === false) {
+      e.preventDefault();
+      if (emojiPickerOverlay.classList.contains('hidden')) {
+        showEmojiPicker();
+      } else {
+        hideEmojiPicker();
+      }
+    }
+  });
+
   // Initialize when DOM is loaded
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
@@ -239,7 +404,7 @@
   // Handle page unload
   window.addEventListener('beforeunload', () => {
     if (stompClient && stompClient.connected) {
-      stompClient.send('/app/chat.sendMessage', {}, JSON.stringify({
+      stompClient.send('/app/chat.removeUser', {}, JSON.stringify({
         sender: username,
         type: 'LEAVE'
       }));

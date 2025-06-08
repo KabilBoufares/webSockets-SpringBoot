@@ -34,14 +34,56 @@
       </main>
 
       <form id="messageForm" class="chat__form">
-        <input type="text"
-               id="message"
-               class="chat__input"
-               placeholder="Votre message…"
-               autocomplete="off"
-               required />
-        <button type="submit" class="btn btn--primary">Envoyer</button>
+        <div class="message-input-container">
+          <input type="text"
+                 id="message"
+                 class="chat__input"
+                 placeholder="Votre message…"
+                 autocomplete="off"
+                 required />
+          <div class="message-actions">
+            <button type="button" class="btn-icon emoji-btn" id="emoji-btn" title="Ajouter un emoji">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                <line x1="15" y1="9" x2="15.01" y2="9"></line>
+              </svg>
+            </button>
+            <button type="submit" class="btn btn--primary">Envoyer</button>
+          </div>
+        </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Emoji Picker Modal -->
+  <div class="emoji-picker-overlay hidden" id="emoji-picker-overlay">
+    <div class="emoji-picker" id="emoji-picker">
+      <div class="emoji-picker__header">
+        <h3>Choisir un emoji</h3>
+        <button type="button" class="btn-icon close-btn" id="close-emoji-picker">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="emoji-picker__categories">
+        <button class="emoji-category active" data-category="smileys">😀</button>
+        <button class="emoji-category" data-category="people">👋</button>
+        <button class="emoji-category" data-category="nature">🌸</button>
+        <button class="emoji-category" data-category="food">🍎</button>
+        <button class="emoji-category" data-category="activities">⚽</button>
+        <button class="emoji-category" data-category="travel">🚗</button>
+        <button class="emoji-category" data-category="objects">💡</button>
+        <button class="emoji-category" data-category="symbols">❤️</button>
+      </div>
+      
+      <div class="emoji-picker__content" id="emoji-content">
+        <!-- Emojis will be populated by JavaScript -->
+      </div>
     </div>
   </div>
 
